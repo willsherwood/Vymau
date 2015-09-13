@@ -1,7 +1,14 @@
 from Operator import Operator
 
-state = dict()
 
+class State(dict):
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            return key
+
+state = State()
 
 def add(x, y):
     return x + y
