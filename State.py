@@ -43,6 +43,9 @@ def ternary(x, y, z):
 def _print(x):
     print(x)
     return x
+def brace(num):
+    return Operator(num, lambda *x: 0)
+
 
 state['+'] = Operator(2, add)
 state['-'] = Operator(2, sub)
@@ -50,8 +53,12 @@ state['*'] = Operator(2, times)
 state['/'] = Operator(2, div)
 
 state['='] = Operator(2, equal)
+
 state['<'] = Operator(2, less_than)
 state['>'] = Operator(2, greater_than)
 state['?'] = Operator(3, ternary)
 state['p'] = Operator(1, _print)
+
+state['{'] = Operator(1, brace)
+
 state['while'] = Operator(0, None)

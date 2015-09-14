@@ -2,6 +2,7 @@ import re
 
 from Operator import Operator
 from State import state
+import State
 from Tokenizer import Tokenizer
 
 
@@ -12,7 +13,12 @@ class Interpreter(object):
 
     def next_expression(self):
         expr = [self.tokens.pop(0)]
-        if type(state[expr[0]]) is Operator:
+        if expr[0] == '{':
+            c = self.tokens.pop(0)
+            self.tokens.insert(0, '{'+c)
+            state['{'+c] = State.brace(int(c))
+            return self.next_expression()
+        elif type(state[expr[0]]) is Operator:
             for _ in range(state[expr[0]].arity):
                 expr += self.next_expression()
         return expr
@@ -43,30 +49,21 @@ class Interpreter(object):
         return len(self.tokens) > 0
 
     def process_while(self):
-        A = self.next_expression()
-        B = [self.next_expression()]
-        while B[len(B) - 1] != ['end']:
-            B.append(self.next_expression())
-            print(B)
-        B = B[:-1]
-        print(B)
+        a = self.next_expression()
+        b = self.next_expression()
         while True:
-            self.expr = A[:]
+            self.expr = a[:]
             result = self.evaluate(new_expr=False)
             if not result:
                 return None
-            for i in B:
-                self.expr = i[:]
-                self.evaluate(new_expr=False)
+            self.expr = b[:]
+            self.evaluate(new_expr=False)
 
     def process_for(self):
         preset = self.next_expression()
         boolean = self.next_expression()
         increment = self.next_expression()
-        body = [self.next_expression()]
-        while body[len(body) - 1] != ['end']:
-            body.append(self.next_expression())
-        body = body[:-1]
+        body = self.next_expression()
         self.expr = preset[:]
         self.evaluate(new_expr=False)
         while True:
@@ -74,19 +71,18 @@ class Interpreter(object):
             result = self.evaluate(new_expr=False)
             if not result:
                 return None
-            for i in body:
-                self.expr = i[:]
-                self.evaluate(new_expr=False)
+            self.expr = body[:]
+            self.evaluate(new_expr=False)
             self.expr = increment[:]
             self.evaluate(new_expr=False)
 
 x = Interpreter("""
-for =x-=y+1=iters 0 1
-    <iters 100=iters+1iters
+for =x-=y+1=i 0 1<i 100=i+1i {3
     p=t+x y
-    =x y =y t
-end
+    =x y=y t
 """)
+
+#for =x-=y+1=iters 0 1<iters 100=iters+1iters{2p=t+x y =x y =y t
 
 while x.has_token():
     x.evaluate(new_expr=True)
